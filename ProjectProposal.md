@@ -43,7 +43,7 @@ The project will follow the software development lifecycle (SDLC), incorporating
 The project will be completed by the third-year Cybersecurity undergraduate cohort (six students) each contributing with their own skillset and experience throughout the development of the project. Further stakeholders include academic staff assisting with the delivery of the module and providing support with the project where applicable. All stakeholders can be found in the table below.
 
 | **Name** | **Stakeholder Type** |
-| ---- | ---- | ---- |
+| ---- | ---- | 
 | Ewan Taylor | Student | 
 | Ryan Van Ee | Student | 
 | Liam Morgan | Student | 
