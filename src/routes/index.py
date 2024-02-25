@@ -1,4 +1,4 @@
-from __main__ import app, database
+from __main__ import app
 
 PATH = "/"
 
