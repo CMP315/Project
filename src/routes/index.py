@@ -2,10 +2,10 @@ from __main__ import app
 
 PATH = "/"
 
-@app.route(PATH + 'ping', methods=['GET'])
+@app.get(PATH + 'ping')
 def ping():    
     return "API is online."
 
-@app.route(PATH, methods=['GET'])
+@app.get(PATH)
 def index():
     return ping()
