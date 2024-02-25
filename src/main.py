@@ -1,17 +1,17 @@
-from flask import Flask
+from flask import Flask, request
 from os import getenv
 from dotenv import load_dotenv, dotenv_values
-
 
 load_dotenv()
 config = dotenv_values('.env')
 
-
 app = Flask(__name__)
-DEBUG = True
+DEBUG = getenv("DEBUG") == "true" or False
 
 import services.database
+
 import routes.index
+import routes.users
 import routes.passwords
 
 if __name__ == "__main__":
@@ -19,3 +19,14 @@ if __name__ == "__main__":
         app.run(debug=DEBUG, port=443, ssl_context=('cert.pem', 'key.pem')) # HTTPS
     else:
         app.run(debug=DEBUG, port=80) # HTTP
+        
+@app.before_request
+def log_request_info():
+    log_message = (
+        f"\n[ REQUEST RECEIVED: {request.method} {request.path} ]\n"
+        f"Request Information:\n"
+        f"-------------------\n"
+        f"Headers: {request.headers}"
+        f"Request Body: {request.data.decode('utf-8')}"
+    )
+    app.logger.debug(log_message)
