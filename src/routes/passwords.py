@@ -4,13 +4,17 @@ from services.database import get_collection
 from bson import json_util
 from json import loads
 from datetime import datetime
+from bson.objectid import ObjectId
+import bson.errors
+import bcrypt
 
 PATH = "/passwords/"
 
 passwords_collection = get_collection("passwords")
+users_collection = get_collection("users")
 
-@app.route(PATH + "<user_id>", methods=['POST'])
-def post(user_id:str):
+@app.post(PATH + "<user_id>")
+def passwords_post(user_id:str):
     data = request.get_json()
     try:
         if not user_id: raise Exception("user id")
@@ -21,13 +25,18 @@ def post(user_id:str):
         password:str = data.get('password')
         if not password: raise Exception("password")
     except Exception as x:
-        return jsonify({ "status": False, "message": f"Missing {str(x).upper()} parameter from body."})
+        return jsonify({ "status": False, "message": f"Missing {str(x).upper()} parameter from body."}), 400
 
-    site_name:str|None = data.get('site_name', None) # Optional
-    notes:str|None = data.get('notes', None) # Optional
+    site_name:str = data.get('site_name', None) # Optional
+    notes:str = data.get('notes', None) # Optional
     created_at:datetime = datetime.now()
-        
     
+    try:
+        user = users_collection.find_one({ '_id': ObjectId(user_id) })
+        if not user: return jsonify({ "status": False, "message": "User does not exist."}), 400
+    except bson.errors.InvalidId as e:
+        return jsonify({ "status": False, "message": "Invalid User ID is supplied, cannot convert to ObjectId."}), 400
+
     response = passwords_collection.insert_one({
         "user_id": user_id,
         "username": username,
@@ -37,7 +46,7 @@ def post(user_id:str):
         "notes": notes
     })
 
-    if not response.acknowledged: return jsonify({ "status": False, "message": "Request not acknowledged by MongoDB."}) 
+    if not response.acknowledged: return jsonify({ "status": False, "message": "Request not acknowledged by MongoDB."}), 400
     
     return jsonify({
         "_id": loads(json_util.dumps(response.inserted_id))['$oid'],
@@ -47,4 +56,4 @@ def post(user_id:str):
         "site_name": site_name,
         "notes": notes,
         "created_at": created_at
-    })
+    }), 200
