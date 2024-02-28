@@ -8,6 +8,8 @@ from bson.objectid import ObjectId
 import bson.errors
 import bcrypt
 
+from services.encryption import decrypt_password, encrypt_password
+
 PATH = "/passwords/"
 
 passwords_collection = get_collection("passwords")
@@ -24,9 +26,13 @@ def passwords_post(user_id:str):
     
         password:str = data.get('password')
         if not password: raise Exception("password")
+        
     except Exception as x:
         return jsonify({ "status": False, "message": f"Missing {str(x).upper()} parameter from body."}), 400
 
+    encrypted_password = encrypt_password(user_id, password)
+    if not encrypted_password: return jsonify({ "status": False, "message": "Issue encrypting password."}), 500
+    
     site_name:str = data.get('site_name', None) # Optional
     notes:str = data.get('notes', None) # Optional
     created_at:datetime = datetime.now()
@@ -40,7 +46,7 @@ def passwords_post(user_id:str):
     response = passwords_collection.insert_one({
         "user_id": user_id,
         "username": username,
-        "password": password,
+        "password": encrypted_password,
         "created_at": created_at,
         "site_name": site_name,
         "notes": notes
@@ -52,8 +58,15 @@ def passwords_post(user_id:str):
         "_id": loads(json_util.dumps(response.inserted_id))['$oid'],
         "user_id": user_id,
         "username": username,
-        "password": password,
+        "password": encrypted_password,
         "site_name": site_name,
         "notes": notes,
         "created_at": created_at
     }), 200
+    
+@app.get(PATH + "<user_id>/<site_id>")
+def passwords_get(user_id:str, site_id:str):
+    password = passwords_collection.find_one({ "user_id": user_id, "_id": ObjectId(site_id) })
+    if not password: return jsonify({ "status": False, "message": "Missing Password." }), 404
+    
+    return jsonify({ "password": decrypt_password(user_id, password['password'])})
