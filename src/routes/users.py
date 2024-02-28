@@ -74,7 +74,6 @@ def user_get(user_id:str):
     try:
         user = users_collection.find_one({ '_id': ObjectId(user_id) })
         if not user: return jsonify({ "status": False, "message": "User does not exist."}), 400
-        print(user)
         user['_id'] = str(user['_id'])
         user = json_util.dumps(user)
         
@@ -119,18 +118,9 @@ def user_path(user_id:str):
             new_salt = str(salt)
             
             for account in all_accounts:
-                print(account)
-                print("Decrypting password")
-                # try:
                 decrypted_password = decrypt_password(user_id, account['password'], old_hashed_password, old_salt)
-                # except:
-                    # print("error decrypting")
-                print(f"Decrypting password...............{decrypted_password}")
-                print("Re-encrypting password")
                 account['password'] = encrypt_password(user_id, decrypted_password, new_hashed_password, new_salt)
-                print(f"Re-encrypting password...............{account['password']}")
                 passwords_collection.replace_one({"_id": ObjectId(account['_id'])}, account, True)
-            print(all_accounts)
             # /return response
             
             user['password'] = new_hashed_password

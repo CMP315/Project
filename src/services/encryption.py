@@ -54,11 +54,8 @@ def decrypt_password(user_id, password_to_decrypt, master_password=None, salt=No
         if not user or not user['salt']: return None
         aes_key, hmac_key = derive_keys(user['password'], user['salt'])
     
-    print("password_to_decrypt", password_to_decrypt)
     tag_str, nonce_str, ciphertext_str = password_to_decrypt.split('?+?')
-    print("tag_str", tag_str)
-    print("nonce_str", nonce_str)
-    print("ciphertext_str", ciphertext_str)
+
     
     tag = eval(tag_str)
     nonce = eval(nonce_str)
