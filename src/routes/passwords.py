@@ -40,7 +40,7 @@ def passwords_post(user_id:str):
     
     try:
         user = users_collection.find_one({ '_id': ObjectId(user_id) })
-        if not user: return jsonify({ "status": False, "message": "User does not exist."}), 400
+        if not user: return jsonify({ "status": False, "message": "User does not exist."}), 404
     except bson.errors.InvalidId as e:
         return jsonify({ "status": False, "message": "Invalid User ID is supplied, cannot convert to ObjectId."}), 400
 
@@ -73,7 +73,7 @@ def passwords_get(user_id:str, site_id:str):
     if not password: return jsonify({ "status": False, "message": "Password not found." }), 404
     password['_id'] = str(password['_id'])
     password['password'] = decrypt_password(user_id, password['password'])
-    return jsonify(password)
+    return jsonify(password), 200
 
 @app.get(PATH + "<user_id>")
 def accounts_get(user_id:str):
