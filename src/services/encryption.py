@@ -33,23 +33,33 @@ def authenticate_and_decrypt(tag, nonce, ciphertext, aes_key, hmac_key):
     except ValueError:
         return None
     
-def encrypt_password(user_id, password_to_encrypt):
+def encrypt_password(user_id, password_to_encrypt, master_password=None, salt=None):
     try:
         user = users_collection.find_one({ "_id": bson.ObjectId(user_id) })
-        if not user or not user['salt']: return None
-        aes_key, hmac_key = derive_keys(user['password'], user['salt'])
+        if master_password and salt:
+            aes_key, hmac_key = derive_keys(master_password, salt)
+        else:
+            if not user or not user['salt'] or not user['password']: return None
+            aes_key, hmac_key = derive_keys(user['password'], user['salt'])
         tag, nonce, ciphertext = process_password(password_to_encrypt, aes_key, hmac_key)
         return f"{tag}?+?{nonce}?+?{ciphertext}"
     except bson.errors.InvalidId as e:
         return None
     
-def decrypt_password(user_id, password_to_decrypt):
-    user = users_collection.find_one({ "_id": bson.ObjectId(user_id) })
-    if not user or not user['salt']: return None
-
-    aes_key, hmac_key = derive_keys(user['password'], user['salt'])
+def decrypt_password(user_id, password_to_decrypt, master_password=None, salt=None):
+    if master_password and salt:
+        aes_key, hmac_key = derive_keys(master_password, salt)
+    else:
+        user = users_collection.find_one({ "_id": bson.ObjectId(user_id) })
+        if not user or not user['salt']: return None
+        aes_key, hmac_key = derive_keys(user['password'], user['salt'])
     
+    print("password_to_decrypt", password_to_decrypt)
     tag_str, nonce_str, ciphertext_str = password_to_decrypt.split('?+?')
+    print("tag_str", tag_str)
+    print("nonce_str", nonce_str)
+    print("ciphertext_str", ciphertext_str)
+    
     tag = eval(tag_str)
     nonce = eval(nonce_str)
     ciphertext = eval(ciphertext_str)
