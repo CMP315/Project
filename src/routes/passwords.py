@@ -70,3 +70,16 @@ def passwords_get(user_id:str, site_id:str):
     if not password: return jsonify({ "status": False, "message": "Missing Password." }), 404
     
     return jsonify({ "password": decrypt_password(user_id, password['password'])})
+
+@app.get(PATH + "<user_id>")
+def accounts_get(user_id:str):
+    all_accounts = passwords_collection.find({ "user_id": user_id })
+    if not all_accounts: return jsonify({ "status": False, "message": "No Passwords Found." }), 404
+    users_list = []
+    
+    for user in all_accounts:
+        user['_id'] = str(user['_id'])
+        user.pop('password', None)
+        users_list.append(user)
+    
+    return jsonify(users_list)
