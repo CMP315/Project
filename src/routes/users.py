@@ -73,7 +73,6 @@ def users_login():
         user.pop("password")
         user.pop("salt")
         user['_id'] = str(user['_id'])
-        user['created_at'] = user['created_at']['$date']
         user = json_util.dumps(user)
         
         return Response(user, mimetype='application/json')
