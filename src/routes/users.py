@@ -56,6 +56,29 @@ def users_post():
         "created_at": created_at
     })
     
+@app.post("/login")
+def users_login():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        
+        user = users_collection.find_one({ 'email': email })
+        print(user)
+        if not user: return jsonify({ "status": False, "message": "User does not exist."}), 400
+        
+        isvalid = bcrypt.checkpw(str.encode(password), str.encode(user['password']))
+        if not isvalid: return jsonify({"status": False, "message": "Invalid Login Credentials"}), 401
+        
+        user.pop("password")
+        user.pop("salt")
+        user['_id'] = str(user['_id'])
+        user = json_util.dumps(user)
+        
+        return Response(user, mimetype='application/json')
+    except bson.errors.InvalidId as e:
+        return jsonify({ "status": False, "message": "Invalid User ID is supplied, cannot convert to ObjectId."}), 400
+    
 @app.get(PATH)
 def users_get():
     all_users = users_collection.find({})

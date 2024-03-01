@@ -39,8 +39,11 @@ def encrypt_password(user_id, password_to_encrypt, master_password=None, salt=No
         if master_password and salt:
             aes_key, hmac_key = derive_keys(master_password, salt)
         else:
+            print(user)
             if not user or not user['salt'] or not user['password']: return None
             aes_key, hmac_key = derive_keys(user['password'], user['salt'])
+            print(user)
+            print(aes_key, hmac_key)
         tag, nonce, ciphertext = process_password(password_to_encrypt, aes_key, hmac_key)
         return f"{tag}?+?{nonce}?+?{ciphertext}"
     except bson.errors.InvalidId as e:
