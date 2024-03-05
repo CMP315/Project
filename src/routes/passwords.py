@@ -35,7 +35,6 @@ def passwords_post(user_id:str):
             return jsonify({ "status": False, "message": f"Missing {str(x).upper()} parameter from body."}), 400
 
         encrypted_password = encrypt_password(user_id, password)
-        print(encrypted_password)
         if not encrypted_password: return jsonify({ "status": False, "message": "Issue encrypting password."}), 500
     
         notes:str = data.get('notes', None) # Optional
