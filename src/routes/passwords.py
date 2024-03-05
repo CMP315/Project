@@ -129,6 +129,16 @@ def passwords_patch(user_id:str, site_id:str):
             return jsonify({ "status": False, "message": "Not saved to MongoDB"}), 500
     except bson.errors.InvalidId as e:
             return jsonify({ "status": False, "message": "Invalid User ID is supplied, cannot convert to ObjectId."}), 400
+
+@app.delete(PATH + "<user_id>")
+def passwords_delete_all(user_id:str):
+    try:
+        response = passwords_collection.delete_one({ "user_id": user_id })
+        if not response.acknowledged: return jsonify({ "status": False, "message": "Request not acknowledged by MongoDB." }), 500
+        if not response.deleted_count > 0: return jsonify({ "status": False, "message": "No documents deleted." }), 401
+        return jsonify({ "status": True })
+    except bson.errors.InvalidId as e:
+            return jsonify({ "status": False, "message": "Invalid User ID is supplied, cannot convert to ObjectId."}), 400
         
 @app.delete(PATH + "<user_id>/<site_id>")
 def passwords_delete(user_id:str, site_id:str):
