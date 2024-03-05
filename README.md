@@ -4,27 +4,21 @@
 The back-end of the Password Manager.
 
 ## Run Locally
-
-Clone the project
-
+1. [Install Python](https://www.python.org/downloads/)
+2. [Install Git](https://git-scm.com/downloads)
+3. Clone the project
 ```bash
   git clone https://github.com/CMP315/API.git CMP315-API
 ```
-
-Go to the project directory
-
+4. Go to the project directory
 ```bash
   cd CMP315-API
 ```
-
-Install dependencies
-
+5. Install dependencies
 ```bash
-  pip install requirements.txt
+  pip install -r requirements.txt
 ```
-
-Start the server
-
+6. Start the server
 ```bash
   python src/main.py
 ```
