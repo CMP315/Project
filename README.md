@@ -14,6 +14,7 @@ The back-end of the Password Manager.
 ```bash
   cd CMP315-API
 ```
+6. [Create .env File](#example-env-file)
 5. Install dependencies
 ```bash
   pip install -r requirements.txt
@@ -22,7 +23,6 @@ The back-end of the Password Manager.
 ```bash
   python src/main.py
 ```
-
 
 ## Environment Variables
 
@@ -34,6 +34,15 @@ To run this project, you will need to add the following environment variables to
 | DEBUG                  | Boolean | `true`                                                                                                       |
 | HTTPS                  | Boolean | `false`                                                                                                      |
 | DATABASE_NAME          | String  | `cmp315-api`                                                                                                 |
+
+### Example .env File
+If you are following the installation steps above, you should put the `.env` file within the **CMP315-API** folder.
+```env
+DEBUG=true
+HTTPS=false
+MONGODB_CONNECTION_URL=mongodb+srv://cmp315:cmp315@cluster0.vz4azvs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+DATABASE_NAME=cmp315-api
+```
 
 ## Usage/Examples
 
