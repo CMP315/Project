@@ -21,40 +21,42 @@ def users_post():
     data = request.get_json()
     try:
         name:str = data.get('name')
-        if not name: raise Exception("name")
+        if not name: raise Exception()
         
         email:str = data.get('email')
-        if not email: raise Exception("email")
+        if not email: raise Exception()
     
         password:str = data.get('password')
-        if not password: raise Exception("password")
+        if not password: raise Exception()
         
         salt = bcrypt.gensalt()
         
         hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
     except Exception as x:
-        return jsonify({ "status": False, "message": f"Missing {str(x).upper()} parameter from body."})
+        return jsonify({ "status": False, "message": f"Missing required parameter from body."})
     
     created_at = datetime.now()
     
-    response = users_collection.insert_one({
+    user = {
         "name": name,
         "email": email,
         "password": hashed_password,
         "salt": salt,
         "created_at": created_at,
-    })
-
+    }
+    response = users_collection.insert_one(user)
+    
     if not response.acknowledged: return jsonify({ "status": False, "message": "Request not acknowledged by MongoDB."}) 
     
-    return jsonify({
-        "_id": loads(json_util.dumps(response.inserted_id))['$oid'],
-        "name": name,
-        "email": email,
-        "password": hashed_password,
-        "created_at": created_at
-    })
+    user.pop("password")
+    user.pop("salt")
+    user['_id'] = str(
+        loads(
+            json_util.dumps(response.inserted_id))['$oid'])
+    user = json_util.dumps(user)
+    
+    return Response(user, mimetype='application/json')
     
 @app.post("/login")
 def users_login():

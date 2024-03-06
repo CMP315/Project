@@ -20,19 +20,19 @@ def passwords_post(user_id:str):
     try:
         data = request.get_json()
         try:
-            if not user_id: raise Exception("user id")
+            if not user_id: raise Exception()
     
             username:str = data.get('username')
-            if not username: raise Exception("username")
+            if not username: raise Exception()
     
             password:str = data.get('password')
-            if not password: raise Exception("password")
+            if not password: raise Exception()
         
             site_name:str = data.get('site_name')
-            if not site_name: raise Exception("site_name")
+            if not site_name: raise Exception()
 
         except Exception as x:
-            return jsonify({ "status": False, "message": f"Missing {str(x).upper()} parameter from body."}), 400
+            return jsonify({ "status": False, "message": f"Missing required parameter from body."}), 400
 
         encrypted_password = encrypt_password(user_id, password)
         if not encrypted_password: return jsonify({ "status": False, "message": "Issue encrypting password."}), 500
