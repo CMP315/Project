@@ -14,12 +14,12 @@ The back-end of the Password Manager.
 ```bash
   cd CMP315-API
 ```
-6. [Create .env File](#example-env-file)
-5. Install dependencies
+5. [Create .env File](#example-env-file)
+6. Install dependencies
 ```bash
   pip install -r requirements.txt
 ```
-6. Start the server
+7. Start the server
 ```bash
   python src/main.py
 ```
