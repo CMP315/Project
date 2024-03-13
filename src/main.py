@@ -13,6 +13,7 @@ import services.database
 import routes.index
 import routes.users
 import routes.passwords
+import routes.notes
 
 if __name__ == "__main__":
     if (getenv("HTTPS") or "false").lower() == "true":
