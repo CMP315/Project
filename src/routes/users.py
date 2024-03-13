@@ -15,6 +15,7 @@ PATH = "/users/"
 
 users_collection = get_collection("users")
 passwords_collection = get_collection("passwords")
+notes_collection = get_collection("notes")
 
 @app.post(PATH)
 def users_post():
@@ -131,9 +132,6 @@ def user_path(user_id:str):
         # try:
         master_password = data.get('password', None)
         if master_password:
-            all_accounts = passwords_collection.find({ "user_id": user_id })
-            if not all_accounts: return jsonify({ "status": False, "message": "No Passwords Found." }), 404
-
             salt = bcrypt.gensalt()
             hashed_password = bcrypt.hashpw(master_password.encode("utf-8"), salt).decode("utf-8")
             
@@ -141,34 +139,32 @@ def user_path(user_id:str):
             old_salt = user['salt']
             new_hashed_password = str(hashed_password)
             new_salt = str(salt)
-            
-            for account in all_accounts:
-                decrypted_password = decrypt_password(user_id, account['password'], old_hashed_password, old_salt)
-                account['password'] = encrypt_password(user_id, decrypted_password, new_hashed_password, new_salt)
-                passwords_collection.replace_one({"_id": ObjectId(account['_id'])}, account, True)
-            # /return response
-            
+
             user['password'] = new_hashed_password
             user['salt'] = new_salt
-        # except:
-            # pass
+
+            all_accounts = passwords_collection.find({ "user_id": user_id })            
+            if all_accounts:
+                for account in all_accounts:
+                    print(f"[all_accounts:password] {account['password']}")
+                    decrypted_password = decrypt_password(user_id, account['password'], old_hashed_password, old_salt)
+                    print(f"[all_accounts:decrypted] {decrypted_password}")
+                    account['password'] = encrypt_password(user_id, decrypted_password, new_hashed_password, new_salt)
+                    print(f"[all_accounts:encrypted] {account['password']}")
+                    passwords_collection.replace_one({"_id": ObjectId(account['_id'])}, account, True)
             
+            all_notes = notes_collection.find({ "user_id": user_id })
+            if all_notes:
+                for note in all_notes:
+                    decrypted_name = decrypt_password(user_id, note['name'], old_hashed_password, old_salt)
+                    decrypted_note = decrypt_password(user_id, note['note'], old_hashed_password, old_salt)
+                    
+                    note['name'] = encrypt_password(user_id, decrypted_name, new_hashed_password, new_salt)
+                    note['note'] = encrypt_password(user_id, decrypted_note, new_hashed_password, new_salt)
+                    
+                    notes_collection.replace_one({"_id": ObjectId(note['_id'])}, note, True)
+
         users_collection.replace_one({ "_id": ObjectId(user_id) }, user, True)
-        # try:
-        #     password:str = data.get('password')
-        #     if password:
-        #         old_password = user['password']
-                
-        #         passwords = passwords_collection.find({ 'user_id': ObjectId(user_id) })
-        #         new_passwords = []
-                
-        #         for child in passwords:
-        #             bcrypt
-                
-        #         new_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        #         user['password'] = new_password
-        # except:
-        #     pass
         user['_id'] = str(user['_id'])
         return jsonify(user)
     except bson.errors.InvalidId as e:

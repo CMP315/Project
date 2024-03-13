@@ -15,6 +15,10 @@ def derive_keys(master_password, salt):
     return keys[:16], keys[16:]
 
 def process_password(password, aes_key, hmac_key):
+    if not password: print("Missing Password"); return [None, None, None]
+    if not aes_key: print("Missing AES Key");return [None, None, None]
+    if not hmac_key: print("Missing HMAC Key");return [None, None, None]
+    
     nonce = os.urandom(8)
     cipher = AES.new(aes_key, AES.MODE_CTR, nonce=nonce)
     ciphertext = cipher.encrypt(password.encode())
