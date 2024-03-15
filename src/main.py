@@ -22,7 +22,7 @@ if __name__ == "__main__":
         app.run(debug=DEBUG, port=80) # HTTP
         
 @app.before_request
-def log_request_info():
+def before_request():
     log_message = (
         f"\n[ REQUEST RECEIVED: {request.method} {request.path} ]\n"
         f"Request Information:\n"

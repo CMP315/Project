@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 import re
 
 from services.encryption import decrypt_password, encrypt_password
+from utils import is_url_image
 
 PATH = "/users/"
 
@@ -36,11 +37,15 @@ def users_post():
 
     except Exception as x:
         return jsonify({ "status": False, "message": f"Missing required parameter from body."})
+
+    image:str = data.get('image', None)
+    if image is not None and is_url_image(image) == False: return jsonify({ "status": False, "message": f"Invalid Image URL in body"})
     
     created_at = datetime.now()
     
     user = {
         "name": name,
+        "image": image,
         "email": email,
         "password": hashed_password,
         "salt": salt,
@@ -129,6 +134,13 @@ def user_path(user_id:str):
         except:
             pass
         
+        try:
+            image:str = data.get('image')
+            if image and is_url_image(image):
+                user['image'] = image
+        except:
+            pass
+        
         # try:
         master_password = data.get('password', None)
         if master_password:
@@ -146,11 +158,8 @@ def user_path(user_id:str):
             all_accounts = passwords_collection.find({ "user_id": user_id })            
             if all_accounts:
                 for account in all_accounts:
-                    print(f"[all_accounts:password] {account['password']}")
                     decrypted_password = decrypt_password(user_id, account['password'], old_hashed_password, old_salt)
-                    print(f"[all_accounts:decrypted] {decrypted_password}")
                     account['password'] = encrypt_password(user_id, decrypted_password, new_hashed_password, new_salt)
-                    print(f"[all_accounts:encrypted] {account['password']}")
                     passwords_collection.replace_one({"_id": ObjectId(account['_id'])}, account, True)
             
             all_notes = notes_collection.find({ "user_id": user_id })
