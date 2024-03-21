@@ -1,0 +1,31 @@
+name: Update Child Repositories
+
+on:
+  repository_dispatch:
+    types: [update_from_api, update_from_app, update_from_docs]
+
+jobs:
+  update_from_child_repositories:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Mega Repository
+        uses: actions/checkout@v2
+
+      - name: Pull changes from API repository
+        if: github.event.client_payload.repository == 'API'
+        run: git subtree pull --prefix=api --squash api main
+
+      - name: Pull changes from Desktop App repository
+        if: github.event.client_payload.repository == 'Desktop-App'
+        run: git subtree pull --prefix=app --squash app main
+
+      - name: Pull changes from Documentation repository
+        if: github.event.client_payload.repository == 'Documentation'
+        run: git subtree pull --prefix=docs --squash docs main
+
+      - name: Commit and push changes to Mega Repository
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -am "Update Child Repositories"
+          git push
