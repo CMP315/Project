@@ -1,5 +1,7 @@
 from __main__ import app
 
+from .passwords import passwords_collection
+
 PATH = "/"
 
 @app.get(PATH + 'ping')

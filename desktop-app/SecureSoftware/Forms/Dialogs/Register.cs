@@ -1,5 +1,7 @@
-﻿using MongoDB.Bson.Serialization;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using SecureSoftware.Classes;
+using SecureSoftware.Components;
 using System.Text;
 using System.Text.Json;
 
@@ -7,7 +9,7 @@ namespace SecureSoftware.Forms
 {
     public partial class Register : Form
     {
-        public MasterAccount? user;
+        private MasterAccount? UserAccount;
         public Register()
         {
             (new Core.DropShadow()).ApplyShadows(this);
@@ -15,8 +17,18 @@ namespace SecureSoftware.Forms
             this.FormBorderStyle = FormBorderStyle.None;
         }
 
+        public MasterAccount? User
+        {
+            get { return this.UserAccount; }
+        }
+
         private async void RegisterButton_ClickAsync(object sender, EventArgs e)
         {
+            if(string.IsNullOrWhiteSpace(NameInputBox.Text) || string.IsNullOrWhiteSpace(EMailInputBox.Text) || string.IsNullOrWhiteSpace(PasswordInputBox.Text)) {
+                MessageBox.Show("One of the input boxes has an invalid value. Ensure all required values are present.", "Invalid Form Details");
+                return;
+            }
+            
             RegisterButton.Enabled = false;
             CancelButton.Enabled = false;
             string apiUrl = $"{Globals.API_BASE_URL}/users";
@@ -28,6 +40,14 @@ namespace SecureSoftware.Forms
                 image = "https://i.imgur.com/dESNvHe.png"
             };
 
+            if(!IsValidEmail(EMailInputBox.Text))
+            {
+                MessageBox.Show("This is not a valid EMail address.");
+                RegisterButton.Enabled = true;
+                CancelButton.Enabled = true;
+                return;
+            };
+
             var jsonRequestBody = JsonSerializer.Serialize(requestBody);
             using var httpClient = new HttpClient();
             try
@@ -37,22 +57,15 @@ namespace SecureSoftware.Forms
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonString = await response.Content.ReadAsStringAsync();
-                    try
+                    LoginRequest? request = BsonSerializer.Deserialize<LoginRequest>(jsonString);
+                    if (request.user is null)
                     {
-                        MessageBox.Show(jsonString);
-                        MasterAccount? user = BsonSerializer.Deserialize<MasterAccount>(jsonString);
-                        if (user is null)
-                        {
-                            return;
-                        }
-                        this.user = user;
-                        this.Close();
-
+                        return;
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.ToString());
-                    }
+                    httpClient.DefaultRequestHeaders.Add("Authorization", request.jwt);
+                    request.user.JWT = request.jwt;
+                    this.UserAccount = request.user;
+                    this.Close();
                 }
                 else
                 {
@@ -69,6 +82,14 @@ namespace SecureSoftware.Forms
                 RegisterButton.Enabled = true;
                 CancelButton.Enabled = true;
             }
+        }
+
+        static bool IsValidEmail(string email)
+        {
+            int atIndex = email.IndexOf('@');
+            int dotIndex = email.LastIndexOf('.');
+
+            return atIndex > 0 && dotIndex > atIndex;
         }
 
         private void CancelButton_Click(object sender, EventArgs e)

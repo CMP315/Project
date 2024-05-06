@@ -1,7 +1,6 @@
 # Project Proposal
 ## CMP 315: Secure Software Engineering<br><br>**BSc Cybersecurity Year 3**<br><br>2023/24
 
-
 ## **Document Control**
 
 | Date | Version | Changes by | Notes |

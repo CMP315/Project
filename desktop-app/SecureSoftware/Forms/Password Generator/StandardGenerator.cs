@@ -5,43 +5,40 @@ namespace SecureSoftware.Forms.Password_Generator
 {
     public partial class StandardGenerator : UserControl
     {
-        private readonly RandomNumberGenerator RandomGenerator;
-        private HashSet<string> CharacterList;
+        private readonly HashSet<string> CharacterList;
 
         private readonly string UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private readonly string LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
         private readonly string DIGITS = "01234567890";
         private readonly string SYMBOLS = "!\\\"£$%^&*()_+=-[]'#<>/?¬`{}@";
 
-        private readonly string[] EMOJIS = GetEmojis(",");
+        private readonly string[] EMOJIS = GetEmojis();
 
         public StandardGenerator()
         {
             InitializeComponent();
-            RandomGenerator = RandomNumberGenerator.Create();
             CharacterList = new HashSet<string>();
 
-            foreach (char c in UPPERCASE.ToCharArray())
+            foreach (char c in UPPERCASE)
             {
                 CharacterList.Add(c.ToString());
             }
 
-            foreach (char c in LOWERCASE.ToCharArray())
+            foreach (char c in LOWERCASE)
             {
                 CharacterList.Add(c.ToString());
             }
 
-            foreach (char c in DIGITS.ToCharArray())
+            foreach (char c in DIGITS)
             {
                 CharacterList.Add(c.ToString());
             }
 
-            foreach (char c in SYMBOLS.ToCharArray())
+            foreach (char c in SYMBOLS)
             {
                 CharacterList.Add(c.ToString());
             }
 
-            this.CreatePassword(25);
             this.UpdatePasswordBox();
         }
 
@@ -85,7 +82,7 @@ namespace SecureSoftware.Forms.Password_Generator
 
             return password.ToString();
         }
-        private static string[] GetEmojis(string separator)
+        private static string[] GetEmojis()
         {
             int start = 0x1F600;
             int end = 0x1F64F;
@@ -256,14 +253,14 @@ namespace SecureSoftware.Forms.Password_Generator
         {
             if (shouldAdd)
             {
-                foreach (char c in stringToArray.ToCharArray())
+                foreach (char c in stringToArray)
                 {
                     CharacterList.Add(c.ToString());
                 }
             }
             else
             {
-                foreach (char c in stringToArray.ToCharArray())
+                foreach (char c in stringToArray)
                 {
                     CharacterList.Remove(c.ToString());
                 }

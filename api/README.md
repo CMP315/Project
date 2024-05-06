@@ -24,6 +24,9 @@ The back-end of the Password Manager.
   python src/main.py
 ```
 
+## API Documentation
+[View Here @ Postman.co](https://cmp315.postman.co/workspace/New-Team-Workspace~ef0c1772-3d09-4444-98f4-23cfd4ed276a/collection/17093352-9164dec6-91af-43f3-ba32-7b6c2867698f?action=share&creator=17093352)
+
 ## Environment Variables
 
 To run this project, you will need to add the following environment variables to your `.env` file

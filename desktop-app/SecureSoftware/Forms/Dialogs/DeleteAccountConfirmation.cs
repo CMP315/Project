@@ -1,10 +1,11 @@
 ﻿using SecureSoftware.Classes;
+using System.Windows.Input;
 
 namespace SecureSoftware.Forms
 {
     public partial class DeleteAccountConfirmation : Form
     {
-        private MasterAccount User;
+        private readonly MasterAccount User;
         public DeleteAccountConfirmation(MasterAccount user)
         {
             (new Core.DropShadow()).ApplyShadows(this);
@@ -17,6 +18,7 @@ namespace SecureSoftware.Forms
         {
             string apiUrl = $"{Globals.API_BASE_URL}/users/{this.User._id}";
             using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Authorization", this.User.JWT);
             try
             {
                 var response = await httpClient.DeleteAsync(apiUrl);
@@ -24,7 +26,7 @@ namespace SecureSoftware.Forms
                 {
                     try
                     {
-                        this.ParentForm.Close();
+                        Environment.Exit(0);
                     }
                     catch (Exception ex)
                     {

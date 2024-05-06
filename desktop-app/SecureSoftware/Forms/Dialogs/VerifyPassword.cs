@@ -7,14 +7,14 @@ namespace SecureSoftware.Forms
 {
     public partial class VerifyPassword : Form
     {
-        private MasterAccount User;
-        private Form Parent;
+        private readonly MasterAccount User;
+        private new readonly Form ParentForm;
         public VerifyPassword(MasterAccount user, Form parent)
         {
             (new Core.DropShadow()).ApplyShadows(this);
             InitializeComponent();
             this.User = user;
-            this.Parent = parent;
+            this.ParentForm = parent;
             this.FormBorderStyle = FormBorderStyle.None;
         }
 
@@ -46,8 +46,8 @@ namespace SecureSoftware.Forms
                     string jsonString = await response.Content.ReadAsStringAsync();
                     try
                     {
-                        MasterAccount? user = BsonSerializer.Deserialize<MasterAccount>(jsonString);
-                        if (user is null)
+                        LoginRequest? request = BsonSerializer.Deserialize<LoginRequest>(jsonString);
+                        if (request.user is null)
                         {
                             return;
                         }
@@ -64,8 +64,8 @@ namespace SecureSoftware.Forms
                             var response2 = await httpClient.PatchAsync(apiUrl2, content2);
                             if (response2.IsSuccessStatusCode)
                             {
-                                string jsonString2 = await response.Content.ReadAsStringAsync();
-                                Parent.Close();
+                                await response.Content.ReadAsStringAsync();
+                                ParentForm.Close();
                                 this.Close();
                             }
                             else

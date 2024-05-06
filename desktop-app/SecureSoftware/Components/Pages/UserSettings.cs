@@ -2,6 +2,7 @@
 using SecureSoftware.Forms;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Input;
 namespace SecureSoftware.Components
 {
     public partial class UserSettings : UserControl
@@ -41,6 +42,11 @@ namespace SecureSoftware.Components
 
         async private void Save_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(UsernameInput.Text) || string.IsNullOrWhiteSpace(EmailInput.Text))
+            {
+                MessageBox.Show("One of the input boxes has an invalid value. Ensure all required values are present.", "Invalid Form Details");
+                return;
+            }
             string inputUsername = UsernameInput.Text;
             string inputEmail = EmailInput.Text;
 
@@ -56,6 +62,8 @@ namespace SecureSoftware.Components
                 User.email = inputEmail;
                 var jsonRequestBody = JsonSerializer.Serialize(requestBody);
                 using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", this.User.JWT);
+
                 try
                 {
                     var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
@@ -75,11 +83,6 @@ namespace SecureSoftware.Components
                     Console.WriteLine($"Exception: {ex.Message}");
                 }
             }
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

@@ -76,7 +76,7 @@ namespace SecureSoftware.Components
 
         private void ViewNoteButton_Click(object sender, EventArgs e)
         {
-            ViewNote viewNote = new(Note);
+            ViewNote viewNote = new(Note, this.MasterAccount.JWT);
             viewNote.ShowDialog();
             return;
         }
@@ -90,10 +90,18 @@ namespace SecureSoftware.Components
 
         async private void DeleteNoteButton_Click(object sender, EventArgs e)
         {
-            bool isDeleted = await Note.Delete();
-            if (isDeleted)
+            PromptDeletion confirmationForm = new ("Are you sure you want to delete this Secure Note: " + this.NameLabel.Text, "Yes, delete it!", "No, keep it!");
+            DialogResult results = confirmationForm.ShowDialog();
+            if(results == DialogResult.OK)
             {
-                this.Dispose();
+                bool isDeleted = await Note.Delete(this.MasterAccount.JWT);
+                if (isDeleted)
+                {
+                    this.Dispose();
+                }
+            } else
+            {
+                confirmationForm.Dispose();
             }
         }
     }

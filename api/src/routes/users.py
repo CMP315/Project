@@ -6,11 +6,15 @@ from json import loads
 from datetime import datetime
 import bcrypt
 import bson.errors
+from secrets import token_hex
 from bson.objectid import ObjectId
 import re
+from os import getenv
 
 from services.encryption import decrypt_password, encrypt_password
+from services.jwt_utils import generate_jwt_token
 from utils import is_url_image
+from main import private_key
 
 PATH = "/users/"
 
@@ -60,9 +64,16 @@ def users_post():
     user['_id'] = str(
         loads(
             json_util.dumps(response.inserted_id))['$oid'])
-    user = json_util.dumps(user)
     
-    return Response(user, mimetype='application/json')
+    user_session_id = token_hex(16)
+    user_jwt_token = generate_jwt_token(user['_id'], user_session_id, private_key)
+    
+    payload = json_util.dumps({
+        "user": user,
+        "jwt": user_jwt_token,
+    })
+    
+    return Response(payload, mimetype='application/json')
     
 @app.post("/login")
 def users_login():
@@ -81,9 +92,17 @@ def users_login():
         user.pop("password")
         user.pop("salt")
         user['_id'] = str(user['_id'])
-        user = json_util.dumps(user)
+        user['created_at'] = str(loads(json_util.dumps(user['created_at']))['$date'])
         
-        return Response(user, mimetype='application/json')
+        user_session_id = token_hex(16)
+        user_jwt_token = generate_jwt_token(user['_id'], user_session_id, private_key)
+
+        payload = json_util.dumps({
+            "user": user,
+            "jwt": user_jwt_token,
+        })
+        
+        return Response(payload, mimetype='application/json')
     except bson.errors.InvalidId as e:
         return jsonify({ "status": False, "message": "Invalid User ID is supplied, cannot convert to ObjectId."}), 400
     
@@ -127,7 +146,7 @@ def user_path(user_id:str):
             pass
         
         try:
-            email_regex = "^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+            email_regex = "^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$" # type: ignore
             email:str = data.get('email')
             if email and re.search(email_regex, email):
                 user['email'] = email

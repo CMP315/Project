@@ -2,8 +2,10 @@
 using SecureSoftware.Classes;
 using SecureSoftware.Components;
 using SecureSoftware.Forms.Password_Generator;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Input;
 
 namespace SecureSoftware.Forms
 {
@@ -26,6 +28,10 @@ namespace SecureSoftware.Forms
 
         async private void CreateButton_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(NameInput.Text) || string.IsNullOrWhiteSpace(PasswordInput.Text) || string.IsNullOrWhiteSpace(SiteNameInput.Text)) {
+                MessageBox.Show("One of the input boxes has an invalid value. Ensure all required values are present.", "Invalid Form Details");
+                return;
+            }
             CreateButton.Enabled = false;
             CancelButton.Enabled = false;
             string apiUrl = $"{Globals.API_BASE_URL}/passwords/{this.User._id}";
@@ -39,6 +45,7 @@ namespace SecureSoftware.Forms
 
             var jsonRequestBody = JsonSerializer.Serialize(requestBody);
             using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Authorization", this.User.JWT);
             try
             {
                 var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
@@ -54,7 +61,7 @@ namespace SecureSoftware.Forms
                             return;
                         }
 
-                        UserAccountListItem panel = new(MainPanel, account, Vault)
+                        UserAccountListItem panel = new(MainPanel, account, Vault, this.User.JWT)
                         {
                             ID = account._id,
                             SiteNameProp = account.site_name,
@@ -100,21 +107,20 @@ namespace SecureSoftware.Forms
         private void QuickGenPassword_Click(object sender, EventArgs e)
         {
             string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?_-";
-            Random random = new();
-            int size = random.Next(50, 59);
+            using RandomNumberGenerator rng = RandomNumberGenerator.Create();
+            byte[] sizeBytes = new byte[4];
+            rng.GetBytes(sizeBytes);
+            int size = Math.Abs(BitConverter.ToInt32(sizeBytes, 0)) % 10 + 50;
 
             char[] chars = new char[size];
+            byte[] bytes = new byte[1];
             for (int i = 0; i < size; i++)
             {
-                chars[i] = validChars[random.Next(0, validChars.Length)];
+                rng.GetBytes(bytes);
+                chars[i] = validChars[bytes[0] % validChars.Length];
             }
 
             PasswordInput.Text = new string(chars);
-        }
-
-        private void label6_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

@@ -1,7 +1,9 @@
 import requests
+import re
 
+pattern = r'^https?://(?:www\.)?(?:m\.)?(?:i\.)?imgur\.com/.*$'
 def is_url_image(url):
-    if "imgur.com" in url:
+    if re.match(pattern, url):
         if url.endswith((".gif", ".png", ".jpg", ".jpeg")):
             return True
         else:

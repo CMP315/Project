@@ -1,5 +1,6 @@
 ﻿using SecureSoftware.Classes;
 using SecureSoftware.Forms;
+using SecureSoftware.Forms.Dialogs;
 using System.ComponentModel;
 
 
@@ -10,6 +11,7 @@ namespace SecureSoftware.Components
         private readonly UserAccount User;
         private readonly PasswordVault PasswordVault;
         private readonly Panel MainPanel;
+        private readonly string jwt;
 
         #region Properties 
         private string? _id;
@@ -52,34 +54,45 @@ namespace SecureSoftware.Components
         #endregion
 
 
-        public UserAccountListItem(Panel MainPanel, UserAccount User, PasswordVault PasswordVault)
+        public UserAccountListItem(Panel MainPanel, UserAccount User, PasswordVault PasswordVault, string key)
         {
             this.MainPanel = MainPanel;
             this.PasswordVault = PasswordVault;
             InitializeComponent();
             this.Width = MainPanel.Width - 40;
             this.User = User;
+            this.jwt = key;
         }
 
         private void ViewButton_Click(object sender, EventArgs e)
         {
-            ViewPassword viewPassword = new(User);
+            ViewPassword viewPassword = new(User, this.jwt);
             viewPassword.ShowDialog();
             return;
         }
 
         async private void DeleteButton_Click(object sender, EventArgs e)
         {
-            bool isDeleted = await User.Delete();
-            if (isDeleted)
+            string SiteName = "[" + this.SiteNameProp + "] " + this.UsernameProp;
+            PromptDeletion confirmationForm = new("Are you sure you want to delete this Password: " + SiteName, "Yes, delete it!", "No, keep it!");
+            DialogResult results = confirmationForm.ShowDialog();
+            if (results == DialogResult.OK)
             {
-                this.Dispose();
+                bool isDeleted = await User.Delete(this.jwt);
+                if (isDeleted)
+                {
+                    this.Dispose();
+                }
+            }
+            else
+            {
+                confirmationForm.Dispose();
             }
         }
 
         private void EditButton_Click(object sender, EventArgs e)
         {
-            EditPassword editPassword = new(User, PasswordVault, MainPanel);
+            EditPassword editPassword = new(User, MainPanel, this.jwt);
             editPassword.ShowDialog();
             return;
         }
